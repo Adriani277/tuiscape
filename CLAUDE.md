@@ -12,3 +12,7 @@ feat(ui): add scrollable pane navigation
 fix(input): handle escape key in modal
 chore: update dependencies
 ```
+
+## Pull Request Rules
+
+- Use the commit message as the PR title (verbatim)
