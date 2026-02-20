@@ -15,4 +15,6 @@ chore: update dependencies
 
 ## Pull Request Rules
 
+- MUST read this file before raising a PR
 - Use the commit message as the PR title (verbatim)
+- Do NOT paraphrase or reword — copy the commit header exactly
