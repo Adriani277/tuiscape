@@ -1,0 +1,13 @@
+[package]
+name = "tuiscape"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tuiscape-core = { path = "../core" }
+ratatui = "0.30.0"
+color-eyre = "0.6.3"
+strum = { version = "0.27.2", features = ["derive"] }
+tui-big-text = "0.8.2"
+serde = "1.0.228"
+derive = "1.0.0"
