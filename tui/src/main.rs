@@ -151,10 +151,15 @@ fn update(model: &mut Model, message: Messages) {
                 method_state,
             } => {
                 if let Some(idx) = method_state.selected() {
-                    model.skill_progress = Duration::ZERO;
-                    model.active_skill = skill_type.methods().into_iter().nth(idx);
+                    if let Some(m) = skill_type.methods().into_iter().nth(idx) {
+                        if model.player.can_use_method(&m) {
+                            model.skill_progress = Duration::ZERO;
+                            model.active_skill = Some(m)
+                        }
+                    };
                 }
             }
+
             View::Skills(list_state) => {
                 let selected_index = list_state.selected();
                 if let Some(index) = selected_index {

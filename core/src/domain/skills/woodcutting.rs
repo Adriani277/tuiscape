@@ -22,4 +22,8 @@ impl SkillMethodData for WoodCuttingMethod {
             WoodCuttingMethod::OakTree => todo!(),
         }
     }
+    
+    fn level_needed(&self) -> crate::domain::level_data::Level {
+        todo!()
+    }
 }

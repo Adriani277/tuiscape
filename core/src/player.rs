@@ -30,24 +30,33 @@ impl Player {
             .expect("all Skill variants are inserted in Player::default()")
     }
 
+    pub fn can_use_method(&self, method: &SkillMethod) -> bool {
+        self.level_data(&method.skill_type()).level >= method.level_needed()
+    }
+
     pub fn skill_tick(
         &mut self,
         method: &SkillMethod,
         tick_delta: Duration,
         skill_progress: Duration,
     ) -> Duration {
-        let method_duration = method.xp_award_duration();
-        let skill = method.skill_type();
-        let data = self.level_data_mut(&skill);
-        let mut accum = skill_progress + tick_delta;
+        let require_level = method.level_needed();
+        if self.level_data(&method.skill_type()).level < require_level {
+            skill_progress
+        } else {
+            let method_duration = method.xp_award_duration();
+            let skill = method.skill_type();
+            let data = self.level_data_mut(&skill);
+            let mut accum = skill_progress + tick_delta;
 
-        while accum >= method_duration {
-            accum -= method_duration;
-            data.xp += method.xp_award_amount();
-            data.level = calculate_level(data.xp);
+            while accum >= method_duration {
+                accum -= method_duration;
+                data.xp += method.xp_award_amount();
+                data.level = calculate_level(data.xp);
+            }
+
+            accum
         }
-
-        accum
     }
 
     pub fn init() -> Player {

@@ -3,12 +3,13 @@ use std::time::Duration;
 
 use strum::IntoEnumIterator;
 
-use crate::domain::{level_data::Xp, skills::{
+use crate::domain::{level_data::{Level, Xp}, skills::{
     cooking::CookingMethod, fishing::FishingMethod, skill_type::Skill,
     woodcutting::WoodCuttingMethod,
 }};
 
 pub trait SkillMethodData {
+    fn level_needed(&self) -> Level;
     fn xp_award_duration(&self) -> Duration;
     fn xp_award_amount(&self) -> Xp;
 }
@@ -54,6 +55,14 @@ impl SkillMethodData for SkillMethod {
             SkillMethod::Fishing(m) => m.xp_award_amount(),
             SkillMethod::WoodCutting(m) => m.xp_award_amount(),
             SkillMethod::Cooking(m) => m.xp_award_amount(),
+        }
+    }
+    
+    fn level_needed(&self) -> Level {
+        match self {
+            SkillMethod::Fishing(fishing_method) => fishing_method.level_needed(),
+            SkillMethod::WoodCutting(wood_cutting_method) => todo!(),
+            SkillMethod::Cooking(cooking_method) => todo!(),
         }
     }
 }

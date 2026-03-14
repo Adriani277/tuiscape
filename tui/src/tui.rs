@@ -4,7 +4,7 @@ use ratatui::{
     prelude::{Buffer, Rect},
     style::{palette::tailwind::SLATE, Color, Style, Stylize},
     symbols,
-    text::Line,
+    text::{Line, Span},
     widgets::{
         Block, Borders, Gauge, HighlightSpacing, List, ListItem, Paragraph, StatefulWidget, Widget,
     },
@@ -122,15 +122,33 @@ impl Model {
                     .into_iter()
                     .enumerate()
                     .map(|(i, m)| {
-                        ListItem::new(vec![
-                            Line::from(format!("{}", m)),
-                            Line::from(format!(
-                                "  {} Skill XP 🕐{}s",
-                                m.xp_award_amount().0,
-                                m.xp_award_duration().as_secs_f32()
-                            )),
-                        ])
-                        .bg(alternate_colors(i))
+                        let lvl = m.level_needed();
+                        let msg = if self.player.can_use_method(&m) {
+                            vec![
+                                Line::from(format!("{} {}", m, lvl)),
+                                Line::from(format!(
+                                    "  {} Skill XP 🕐{}s",
+                                    m.xp_award_amount().0,
+                                    m.xp_award_duration().as_secs_f32()
+                                )),
+                            ]
+                        } else {
+                            vec![
+                                Line::from(vec![
+                                    "🔒 ".into(),
+                                    format!("{}", m).dark_gray(),
+                                    format!(" (Req. {})", lvl).yellow(),
+                                ]),
+                                Line::from(format!(
+                                    "  {} Skill XP 🕐{}s",
+                                    m.xp_award_amount().0,
+                                    m.xp_award_duration().as_secs_f32()
+                                ))
+                                .style(Style::new().dark_gray()),
+                            ]
+                        };
+
+                        ListItem::new(msg).bg(alternate_colors(i))
                     })
                     .collect();
                 if method_state.selected().is_none() {
@@ -148,7 +166,7 @@ impl Model {
 
         let list = List::new(items)
             .block(block)
-            .highlight_style(Style::new().red())
+            .highlight_style(Style::new().bg(SLATE.c700))
             .highlight_symbol("->")
             .highlight_spacing(HighlightSpacing::Always);
 

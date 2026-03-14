@@ -1,3 +1,4 @@
+use core::fmt;
 use std::{
     ops::{Add, AddAssign},
     sync::LazyLock,
@@ -28,7 +29,7 @@ impl AddAssign for Xp {
     }
 }
 
-#[derive(PartialEq, Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(PartialEq, PartialOrd, Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct Level(pub u8);
 impl AddAssign for Level {
     fn add_assign(&mut self, rhs: Self) {
@@ -40,6 +41,12 @@ impl Add<u8> for Level {
 
     fn add(self, rhs: u8) -> Self::Output {
         Level(self.0 + rhs)
+    }
+}
+
+impl fmt::Display for Level {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Level:{}", self.0)
     }
 }
 
@@ -64,7 +71,6 @@ pub fn calculate_level(xp: Xp) -> Level {
         .expect("Level out of bounds");
     Level(level_idx as u8 + 1)
 }
-
 
 #[cfg(test)]
 mod tests {
