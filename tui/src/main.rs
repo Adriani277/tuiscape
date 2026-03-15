@@ -68,6 +68,7 @@ struct Model {
     skill_progress: Duration,
     view: View,
     active_skill: Option<SkillMethod>,
+    current_cycle_duration: Option<Duration>,
     player: Player,
 }
 
@@ -78,6 +79,7 @@ impl Default for Model {
             skill_progress: Duration::ZERO,
             view: View::Skills(ListState::default()),
             active_skill: None,
+            current_cycle_duration: None,
             player: Player::init(),
         }
     }
@@ -154,7 +156,8 @@ fn update(model: &mut Model, message: Messages) {
                     if let Some(m) = skill_type.methods().into_iter().nth(idx) {
                         if model.player.can_use_method(&m) {
                             model.skill_progress = Duration::ZERO;
-                            model.active_skill = Some(m)
+                            model.active_skill = Some(m.clone());
+                            model.current_cycle_duration = Some(m.xp_award_duration().resolve())
                         }
                     };
                 }
@@ -177,16 +180,23 @@ fn update(model: &mut Model, message: Messages) {
 
         Messages::StopSkilling => {
             model.skill_progress = Duration::ZERO;
-            model.active_skill = None
+            model.active_skill = None;
+            model.current_cycle_duration = None
         }
 
         Messages::Tick(tick_duration) => {
             if let Some(active) = &model.active_skill {
-                let accum = model
-                    .player
-                    .skill_tick(active, tick_duration, model.skill_progress);
+                if let Some(dur) = &model.current_cycle_duration {
+                    let result =
+                        model
+                            .player
+                            .skill_tick(active, tick_duration, model.skill_progress, *dur);
 
-                model.skill_progress = accum;
+                    model.skill_progress = result.progress;
+                    if result.cycle_complete {
+                        model.current_cycle_duration = Some(active.xp_award_duration().resolve());
+                    }
+                }
             }
         }
 

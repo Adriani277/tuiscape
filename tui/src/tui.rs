@@ -12,7 +12,9 @@ use ratatui::{
 use strum::IntoEnumIterator;
 use tui_big_text::{BigText, PixelSize};
 use tuiscape_core::domain::{
-    level_data::xp_for_level, skill_method::SkillMethodData, skills::skill_type::Skill,
+    level_data::xp_for_level,
+    skill_method::{DurationType, SkillMethodData},
+    skills::skill_type::Skill,
 };
 
 use crate::{Model, View};
@@ -123,13 +125,19 @@ impl Model {
                     .enumerate()
                     .map(|(i, m)| {
                         let lvl = m.level_needed();
+                        let duration_str = match m.xp_award_duration() {
+                            DurationType::Static(d) => format!("{}s", d.as_secs()),
+                            DurationType::Dynamic { min, max } => {
+                                format!("{}-{}s", min.as_secs(), max.as_secs())
+                            }
+                        };
                         let msg = if self.player.can_use_method(&m) {
                             vec![
                                 Line::from(format!("{} {}", m, lvl)),
                                 Line::from(format!(
-                                    "  {} Skill XP 🕐{}s",
+                                    "  {} Skill XP 🕐{}",
                                     m.xp_award_amount().0,
-                                    m.xp_award_duration().as_secs_f32()
+                                    duration_str
                                 )),
                             ]
                         } else {
@@ -140,9 +148,9 @@ impl Model {
                                     format!(" (Req. {})", lvl).yellow(),
                                 ]),
                                 Line::from(format!(
-                                    "  {} Skill XP 🕐{}s",
+                                    "  {} Skill XP 🕐{}",
                                     m.xp_award_amount().0,
-                                    m.xp_award_duration().as_secs_f32()
+                                    duration_str
                                 ))
                                 .style(Style::new().dark_gray()),
                             ]
@@ -201,9 +209,11 @@ impl Model {
                 skill, method, level_data.xp.0, xp_for_next_level.0
             );
 
-            let progress = (self.skill_progress.as_secs_f32()
-                / method.xp_award_duration().as_secs_f32())
-                * 100.0;
+            let cycle_secs = self
+                .current_cycle_duration
+                .map(|d| d.as_secs_f32())
+                .unwrap_or(1.0);
+            let progress = (self.skill_progress.as_secs_f32() / cycle_secs) * 100.0;
 
             let title = Block::new()
                 .title(name)

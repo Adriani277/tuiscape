@@ -1,6 +1,9 @@
 use std::time::Duration;
 
-use crate::domain::{level_data::Xp, skill_method::SkillMethodData};
+use crate::domain::{
+    level_data::Xp,
+    skill_method::{DurationType, SkillMethodData},
+};
 
 #[derive(Debug, Clone, strum::EnumIter, strum::Display, PartialEq, Eq, PartialOrd, Ord)]
 pub enum CookingMethod {
@@ -9,9 +12,9 @@ pub enum CookingMethod {
 }
 
 impl SkillMethodData for CookingMethod {
-    fn xp_award_duration(&self) -> Duration {
+    fn xp_award_duration(&self) -> DurationType {
         match self {
-            CookingMethod::Shrimp => Duration::from_secs(5),
+            CookingMethod::Shrimp => DurationType::Static(Duration::from_secs(5)),
             CookingMethod::Anchovies => todo!(),
         }
     }
@@ -22,7 +25,7 @@ impl SkillMethodData for CookingMethod {
             CookingMethod::Anchovies => todo!(),
         }
     }
-    
+
     fn level_needed(&self) -> crate::domain::level_data::Level {
         todo!()
     }

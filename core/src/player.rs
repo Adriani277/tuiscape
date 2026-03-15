@@ -12,6 +12,11 @@ use crate::{
     storage,
 };
 
+pub struct TickResult {
+    pub progress: Duration,
+    pub cycle_complete: bool,
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct Player {
     levels: HashMap<Skill, LevelData>,
@@ -39,23 +44,31 @@ impl Player {
         method: &SkillMethod,
         tick_delta: Duration,
         skill_progress: Duration,
-    ) -> Duration {
+        method_duration: Duration,
+    ) -> TickResult {
         let require_level = method.level_needed();
         if self.level_data(&method.skill_type()).level < require_level {
-            skill_progress
+            TickResult {
+                progress: skill_progress,
+                cycle_complete: false,
+            }
         } else {
-            let method_duration = method.xp_award_duration();
             let skill = method.skill_type();
             let data = self.level_data_mut(&skill);
             let mut accum = skill_progress + tick_delta;
+            let mut cycle_complete = false;
 
             while accum >= method_duration {
                 accum -= method_duration;
+                cycle_complete = true;
                 data.xp += method.xp_award_amount();
                 data.level = calculate_level(data.xp);
             }
 
-            accum
+            TickResult {
+                progress: accum,
+                cycle_complete,
+            }
         }
     }
 

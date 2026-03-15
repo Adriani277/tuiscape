@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::domain::{level_data::Xp, skill_method::SkillMethodData};
+use crate::domain::{level_data::Xp, skill_method::{DurationType, SkillMethodData}};
 
 #[derive(Debug, Clone, strum::EnumIter, strum::Display, PartialEq, Eq, PartialOrd, Ord)]
 pub enum WoodCuttingMethod {
@@ -9,7 +9,7 @@ pub enum WoodCuttingMethod {
 }
 
 impl SkillMethodData for WoodCuttingMethod {
-    fn xp_award_duration(&self) -> Duration {
+    fn xp_award_duration(&self) -> DurationType {
         match self {
             WoodCuttingMethod::Tree => todo!(),
             WoodCuttingMethod::OakTree => todo!(),

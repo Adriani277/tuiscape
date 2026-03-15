@@ -3,14 +3,36 @@ use std::time::Duration;
 
 use strum::IntoEnumIterator;
 
-use crate::domain::{level_data::{Level, Xp}, skills::{
-    cooking::CookingMethod, fishing::FishingMethod, skill_type::Skill,
-    woodcutting::WoodCuttingMethod,
-}};
+use crate::domain::{
+    level_data::{Level, Xp},
+    skills::{
+        cooking::CookingMethod, fishing::FishingMethod, skill_type::Skill,
+        woodcutting::WoodCuttingMethod,
+    },
+};
+use rand::prelude::*;
+
+pub enum DurationType {
+    Static(Duration),
+    Dynamic { min: Duration, max: Duration },
+}
+
+impl DurationType {
+    pub fn resolve(&self) -> Duration {
+        match self {
+            DurationType::Static(duration) => *duration,
+            DurationType::Dynamic { min, max } => {
+                let mut rng = rand::rng();
+                let secs = rng.random_range(min.as_secs()..=max.as_secs());
+                Duration::from_secs(secs)
+            }
+        }
+    }
+}
 
 pub trait SkillMethodData {
     fn level_needed(&self) -> Level;
-    fn xp_award_duration(&self) -> Duration;
+    fn xp_award_duration(&self) -> DurationType;
     fn xp_award_amount(&self) -> Xp;
 }
 
@@ -42,7 +64,7 @@ impl fmt::Display for SkillMethod {
 }
 
 impl SkillMethodData for SkillMethod {
-    fn xp_award_duration(&self) -> Duration {
+    fn xp_award_duration(&self) -> DurationType {
         match self {
             SkillMethod::Fishing(m) => m.xp_award_duration(),
             SkillMethod::WoodCutting(m) => m.xp_award_duration(),
@@ -57,7 +79,7 @@ impl SkillMethodData for SkillMethod {
             SkillMethod::Cooking(m) => m.xp_award_amount(),
         }
     }
-    
+
     fn level_needed(&self) -> Level {
         match self {
             SkillMethod::Fishing(fishing_method) => fishing_method.level_needed(),
